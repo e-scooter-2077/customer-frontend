@@ -1,42 +1,41 @@
 ﻿using EScooter.CustomerFrontend.Data;
-using System;
-using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 
 namespace EScooter.CustomerFrontend
 {
     /// <summary>
-    /// Interaction logic for CustomerView.xaml
+    /// Interaction logic for CustomerView.xaml.
     /// </summary>
     public partial class CustomerView : Window
     {
-        public CustomerViewModel Customer { get; private set; }
+        private readonly CustomerViewModel _customer;
+        private readonly IQueryService _queryService;
+        private readonly IRentService _rentService;
 
-        public CustomerView(CustomerViewModel customer)
+        public CustomerView(CustomerViewModel customer, IQueryService queryService, IRentService rentService)
         {
             InitializeComponent();
-            Customer = customer;
+            _customer = customer;
+            _queryService = queryService;
+            _rentService = rentService;
         }
 
-        private void WindowLoaded(object sender, RoutedEventArgs e)
+        private async void WindowLoaded(object sender, RoutedEventArgs e)
         {
-            _titleLabel.Content = $"Customer: {Customer.Id}";            
+            _titleLabel.Content = $"Customer: {_customer.Id}";
+            await Refresh();
         }
 
         private async Task Refresh()
         {
-
-        }
-
-        private async Task<IEnumerable<ScooterViewModel>> LoadScooters()
-        {
-            await Task.Yield();
-            return new ScooterViewModel[]
+            var scooters = await _queryService.GetScooters();
+            _scootersListBox.ItemsSource = scooters;
+            if (scooters.Any())
             {
-                new(Guid.NewGuid(), 10, 30, 10),
-                new(Guid.NewGuid(), 11, 22, 90)
-            };
+                _scootersListBox.SelectedIndex = 0;
+            }
         }
     }
 }
