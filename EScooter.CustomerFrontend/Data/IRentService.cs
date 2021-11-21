@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace EScooter.CustomerFrontend.Data
 {
-    interface IRentService
+    public interface IRentService
     {
         Task<RentViewModel> StartRent(Guid customerId, Guid scooterId);
 
