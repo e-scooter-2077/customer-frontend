@@ -24,13 +24,25 @@
             <ColumnDefinition Width="10"/>
         </Grid.ColumnDefinitions>
         <Label x:Name="_titleLabel" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Content="Customer: ID" FontSize="30"/>
-        <ListBox x:Name="_scootersListBox" Grid.Column="1" Grid.Row="3" Grid.RowSpan="3"/>
-        <GroupBox x:Name="groupBox" Grid.Column="3" Header="Scooter information" Grid.Row="3">
+        <ListBox x:Name="_scootersListBox" Grid.Column="1" Grid.Row="3" Grid.RowSpan="3" DisplayMemberPath="Id"/>
+        <GroupBox x:Name="groupBox" Grid.Column="3" Header="Scooter information" Grid.Row="3" Padding="10">
             <DockPanel LastChildFill="False">
-                <Label x:Name="_batteryLevelLabel" Content="Id: 0000-0000-0000000" DockPanel.Dock="Top"/>
-                <Label x:Name="_idLabel" Content="Battery Level: 100%" DockPanel.Dock="Top"/>
-                <Label x:Name="_latitudeLabel" Content="Latitude: 0" DockPanel.Dock="Top"/>
-                <Label x:Name="_longitudeLabel" Content="Longitude: 0" DockPanel.Dock="Top"/>
+                <DockPanel LastChildFill="True" DockPanel.Dock="Top">
+                    <Label Content="Id:"/>
+                    <Label Content="{Binding ElementName=_scootersListBox, Path=SelectedItem.Id}" HorizontalContentAlignment="Right"/>
+                </DockPanel>
+                <DockPanel LastChildFill="True" DockPanel.Dock="Top">
+                    <Label Content="Battery level:"/>
+                    <Label Content="{Binding ElementName=_scootersListBox, Path=SelectedItem.BatteryLevel}" HorizontalContentAlignment="Right"/>
+                </DockPanel>
+                <DockPanel LastChildFill="True" DockPanel.Dock="Top">
+                    <Label Content="Latitude:"/>
+                    <Label Content="{Binding ElementName=_scootersListBox, Path=SelectedItem.Latitude}" HorizontalContentAlignment="Right"/>
+                </DockPanel>
+                <DockPanel LastChildFill="True" DockPanel.Dock="Top">
+                    <Label Content="Longitude:"/>
+                    <Label Content="{Binding ElementName=_scootersListBox, Path=SelectedItem.Longitude}" HorizontalContentAlignment="Right"/>
+                </DockPanel>
             </DockPanel>
         </GroupBox>
         <Button x:Name="button" Content="Button" Grid.Column="3" Grid.Row="5" VerticalAlignment="Top"/>
