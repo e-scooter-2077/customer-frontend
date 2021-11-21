@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace EScooter.CustomerFrontend.Data
 {
-    interface IQueryService
+    public interface IQueryService
     {
         Task<IEnumerable<CustomerViewModel>> GetCustomers();
 

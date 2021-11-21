@@ -1,21 +1,23 @@
 ﻿using EScooter.CustomerFrontend.Data;
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
-using static EasyDesk.Tools.Collections.EnumerableUtils;
 
 namespace EScooter.CustomerFrontend
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// Interaction logic for MainWindow.xaml.
     /// </summary>
     public partial class HomeView : Window
     {
-        public HomeView()
+        private readonly IQueryService _queryService;
+        private readonly IRentService _rentService;
+
+        public HomeView(IQueryService queryService, IRentService rentService)
         {
             InitializeComponent();
+            _queryService = queryService;
+            _rentService = rentService;
         }
 
         private async void WindowLoaded(object sender, RoutedEventArgs e)
@@ -30,7 +32,7 @@ namespace EScooter.CustomerFrontend
                 MessageBox.Show("No customer is selected");
                 return;
             }
-            new CustomerView(selectedCustomer).Show();
+            new CustomerView(selectedCustomer, _queryService, _rentService).Show();
         }
 
         private async void RefreshClicked(object sender, RoutedEventArgs e)
@@ -40,19 +42,12 @@ namespace EScooter.CustomerFrontend
 
         private async Task Refresh()
         {
-            var customers = await LoadCustomers();
+            var customers = await _queryService.GetCustomers();
             _customersListBox.ItemsSource = customers;
             if (customers.Any())
             {
                 _customersListBox.SelectedIndex = 0;
             }
-        }
-
-        private Task<IEnumerable<CustomerViewModel>> LoadCustomers()
-        {
-            return Task.FromResult(Items(
-                new CustomerViewModel(Guid.NewGuid()),
-                new CustomerViewModel(Guid.NewGuid())));
         }
     }
 }
