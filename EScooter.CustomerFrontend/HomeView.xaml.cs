@@ -1,4 +1,5 @@
-﻿using System;
+﻿using EScooter.CustomerFrontend.Data;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -7,8 +8,6 @@ using static EasyDesk.Tools.Collections.EnumerableUtils;
 
 namespace EScooter.CustomerFrontend
 {
-    public record CustomerViewModel(Guid Id);
-
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>

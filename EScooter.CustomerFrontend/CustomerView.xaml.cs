@@ -1,12 +1,11 @@
-﻿using System;
+﻿using EScooter.CustomerFrontend.Data;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows;
 
 namespace EScooter.CustomerFrontend
 {
-    public record ScooterViewModel(Guid Id, double Latitude, double Longitude, double BatteryLevel);
-
     /// <summary>
     /// Interaction logic for CustomerView.xaml
     /// </summary>
