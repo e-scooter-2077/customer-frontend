@@ -27,7 +27,7 @@
 
         <Label Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="4" Content="Customer selection" FontSize="30"/>
         <ListBox x:Name="_customersListBox" Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="4" DisplayMemberPath="Id" />
-        <Button x:Name="_refreshButton" Grid.Row="5" Grid.Column="2" Content="Refresh" Click="RefreshClicked"/>
-        <Button x:Name="_loginButton" Grid.Row="5" Grid.Column="4" Content="Login" Click="LoginClicked"/>
+        <Button Grid.Row="5" Grid.Column="2" Content="Refresh" Click="RefreshClicked"/>
+        <Button Grid.Row="5" Grid.Column="4" Content="Login" Click="LoginClicked" IsEnabled="{Binding ElementName=_customersListBox, Path=SelectedItems.Count}"/>
     </Grid>
 </Window>

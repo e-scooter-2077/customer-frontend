@@ -3,7 +3,6 @@ using Azure.DigitalTwins.Core;
 using EasyDesk.Tools.Options;
 using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
 using static EasyDesk.Tools.Options.OptionImports;
@@ -12,8 +11,7 @@ namespace EScooter.CustomerFrontend.Data
 {
     public class DigitalTwinQueryService : IQueryService
     {
-
-        DigitalTwinsClient _client;
+        private readonly DigitalTwinsClient _client;
 
         public DigitalTwinQueryService(DigitalTwinsClient client)
         {
@@ -24,11 +22,11 @@ namespace EScooter.CustomerFrontend.Data
         {
             var customers = new List<CustomerViewModel>();
 
-            string query = "SELECT * FROM DIGITALTWINS DT WHERE IS_OF_MODEL(DT, 'dtmi:com:escooter:Customer;1')";
-            AsyncPageable<BasicDigitalTwin> result = _client.QueryAsync<BasicDigitalTwin>(query);
+            var query = "SELECT * FROM DIGITALTWINS DT WHERE IS_OF_MODEL(DT, 'dtmi:com:escooter:Customer;1')";
+            var result = _client.QueryAsync<BasicDigitalTwin>(query);
             try
             {
-                await foreach (BasicDigitalTwin twin in result)
+                await foreach (var twin in result)
                 {
                     customers.Add(new CustomerViewModel(new Guid(twin.Id)));
                 }
@@ -44,10 +42,10 @@ namespace EScooter.CustomerFrontend.Data
         public async Task<Option<RentViewModel>> GetRent(Guid customerId)
         {
             RentViewModel rent = null;
-            string id = customerId.ToString();
-            AsyncPageable<BasicRelationship> result = _client.GetRelationshipsAsync<BasicRelationship>(id, "is_riding");
-            
-            await foreach (BasicRelationship rentRelationship in result)
+            var id = customerId.ToString();
+            var result = _client.GetRelationshipsAsync<BasicRelationship>(id, "is_riding");
+
+            await foreach (var rentRelationship in result)
             {
                 var rentId = new Guid(rentRelationship.Id);
                 var startTime = ((JsonElement)rentRelationship.Properties["start"]).GetDateTime();
@@ -55,7 +53,7 @@ namespace EScooter.CustomerFrontend.Data
                 rent = new RentViewModel(rentId, startTime, customerId, scooterId);
             }
 
-            if(rent == null)
+            if (rent == null)
             {
                 return None;
             }
@@ -66,13 +64,13 @@ namespace EScooter.CustomerFrontend.Data
         {
             var scooters = new List<ScooterViewModel>();
 
-            string query = "SELECT * FROM DIGITALTWINS DT WHERE IS_OF_MODEL(DT, 'dtmi:com:escooter:EScooter;1')";
-            AsyncPageable<BasicDigitalTwin> result = _client.QueryAsync<BasicDigitalTwin>(query);
+            var query = "SELECT * FROM DIGITALTWINS DT WHERE IS_OF_MODEL(DT, 'dtmi:com:escooter:EScooter;1')";
+            var result = _client.QueryAsync<BasicDigitalTwin>(query);
             try
             {
-                await foreach (BasicDigitalTwin twin in result)
+                await foreach (var twin in result)
                 {
-                    Guid id = new Guid(twin.Id);
+                    var id = new Guid(twin.Id);
 
                     var latitude = ((JsonElement)twin.Contents["Latitude"]).GetDouble();
                     var longitude = ((JsonElement)twin.Contents["Longitude"]).GetDouble();

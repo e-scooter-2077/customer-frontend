@@ -1,5 +1,4 @@
 ﻿using EScooter.CustomerFrontend.Data;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 
@@ -44,10 +43,6 @@ namespace EScooter.CustomerFrontend
         {
             var customers = await _queryService.GetCustomers();
             _customersListBox.ItemsSource = customers;
-            if (customers.Any())
-            {
-                _customersListBox.SelectedIndex = 0;
-            }
         }
     }
 }

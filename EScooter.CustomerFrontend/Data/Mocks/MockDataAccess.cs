@@ -49,7 +49,7 @@ namespace EScooter.CustomerFrontend.Data.Mocks
         public Task StopRent(Guid rentId)
         {
             var customerId = _rents
-                .Where(r => r.Value.RentId == rentId)
+                .Where(r => r.Value.Id == rentId)
                 .Select(r => r.Key)
                 .FirstOrDefault();
 
