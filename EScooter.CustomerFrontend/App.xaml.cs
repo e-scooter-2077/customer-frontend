@@ -1,5 +1,7 @@
-﻿using EScooter.CustomerFrontend.Data;
-using EScooter.CustomerFrontend.Data.Mocks;
+﻿using Azure.DigitalTwins.Core;
+using Azure.Identity;
+using EScooter.CustomerFrontend.Data;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Windows;
@@ -15,18 +17,38 @@ namespace EScooter.CustomerFrontend
 
         public App()
         {
+            var configuration = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json", optional: false)
+                .AddUserSecrets<App>(optional: true)
+                .Build();
+
             var container = new ServiceCollection();
-            ConfigureServices(container);
+            ConfigureServices(container, configuration);
             _serviceProvider = container.BuildServiceProvider();
         }
 
-        private void ConfigureServices(IServiceCollection services)
+        private void ConfigureServices(IServiceCollection services, IConfiguration configuration)
         {
             services.AddTransient<HomeView>();
 
-            services.AddSingleton<MockDataAccess>();
-            services.AddSingleton<IQueryService>(p => p.GetRequiredService<MockDataAccess>());
-            services.AddSingleton<IRentService>(p => p.GetRequiredService<MockDataAccess>());
+            ////services.AddSingleton<MockDataAccess>();
+            ////services.AddSingleton<IQueryService>(p => p.GetRequiredService<MockDataAccess>());
+            ////services.AddSingleton<IRentService>(p => p.GetRequiredService<MockDataAccess>());
+            services.AddSingleton<IQueryService, DigitalTwinQueryService>();
+
+            services.AddHttpClient<IRentService, HttpRentService>(client =>
+            {
+                client.BaseAddress = new Uri(configuration["RentServiceUri"]);
+            });
+
+            services.AddSingleton(_ => CreateDigitalTwinsClient(configuration));
+        }
+
+        private DigitalTwinsClient CreateDigitalTwinsClient(IConfiguration configuration)
+        {
+            var instanceUri = new Uri(configuration["DigitalTwinsUri"]);
+            var credentials = new DefaultAzureCredential();
+            return new DigitalTwinsClient(instanceUri, credentials);
         }
 
         protected override void OnStartup(StartupEventArgs e)

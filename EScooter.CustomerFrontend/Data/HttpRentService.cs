@@ -8,6 +8,7 @@ namespace EScooter.CustomerFrontend.Data
 {
     public class HttpRentService : IRentService
     {
+        private const int DelayMilliseconds = 500;
         private readonly HttpClient _client;
 
         public HttpRentService(HttpClient client)
@@ -15,7 +16,9 @@ namespace EScooter.CustomerFrontend.Data
             _client = client;
         }
 
-        private record RentDto(Guid Id, ConfirmationDto Confirmation, CancellationDto Cancellation);
+        private record ResponseDto<T>(T Data);
+
+        private record RentDto(Guid Id, ConfirmationDto ConfirmationInfo, CancellationDto CancellationInfo);
 
         private record ConfirmationDto(DateTime Timestamp);
 
@@ -25,15 +28,16 @@ namespace EScooter.CustomerFrontend.Data
         {
             var rent = await MakeRequestWithResponse<RentDto>(c => c.PostAsJsonAsync("rents", new { customerId, scooterId }));
             var rentId = rent.Id;
-            while (rent.Confirmation is null && rent.Cancellation is null)
+            while (rent.ConfirmationInfo is null && rent.CancellationInfo is null)
             {
+                await Task.Delay(DelayMilliseconds);
                 rent = await MakeRequestWithResponse<RentDto>(c => c.GetAsync($"rents/{rentId}"));
             }
-            if (rent.Cancellation is not null)
+            if (rent.CancellationInfo is not null)
             {
-                throw new Exception($"Rent was cancelled (Reason: {rent.Cancellation.Reason})");
+                throw new Exception($"Rent was cancelled (Reason: {rent.CancellationInfo.Reason})");
             }
-            return new RentViewModel(rentId, rent.Confirmation.Timestamp, customerId, scooterId);
+            return new RentViewModel(rentId, rent.ConfirmationInfo.Timestamp, customerId, scooterId);
         }
 
         public async Task StopRent(Guid rentId)
@@ -44,7 +48,8 @@ namespace EScooter.CustomerFrontend.Data
         private async Task<T> MakeRequestWithResponse<T>(AsyncFunc<HttpClient, HttpResponseMessage> request)
         {
             var response = await MakeRequest(request);
-            return await response.Content.ReadFromJsonAsync<T>();
+            var dto = await response.Content.ReadFromJsonAsync<ResponseDto<T>>();
+            return dto.Data;
         }
 
         private async Task<HttpResponseMessage> MakeRequest(AsyncFunc<HttpClient, HttpResponseMessage> request)
