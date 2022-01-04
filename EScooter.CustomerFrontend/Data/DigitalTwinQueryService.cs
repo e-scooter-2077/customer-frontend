@@ -3,19 +3,26 @@ using Azure.DigitalTwins.Core;
 using EasyDesk.Tools.Options;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using static EasyDesk.Tools.Options.OptionImports;
 
 namespace EScooter.CustomerFrontend.Data
 {
+    public record ScooterDto(Guid Id, double Latitude, double Longitude, double BatteryLevel, bool Enabled, bool Rented, bool Locked, bool Standby, bool Connected);
+
     public class DigitalTwinQueryService : IQueryService
     {
-        private readonly DigitalTwinsClient _client;
+        private readonly DigitalTwinsClient _dtClient;
+        private readonly HttpClient _httpClient;
+        private readonly string _getScooterUrl = "https://admin-api-gateway.azurewebsites.net/api/scooters";
 
-        public DigitalTwinQueryService(DigitalTwinsClient client)
+        public DigitalTwinQueryService(DigitalTwinsClient dtClient, HttpClient httpClient)
         {
-            _client = client;
+            _httpClient = httpClient;
+            _dtClient = dtClient;
         }
 
         public async Task<IEnumerable<CustomerViewModel>> GetCustomers()
@@ -23,7 +30,7 @@ namespace EScooter.CustomerFrontend.Data
             var customers = new List<CustomerViewModel>();
 
             var query = "SELECT * FROM DIGITALTWINS DT WHERE IS_OF_MODEL(DT, 'dtmi:com:escooter:Customer;1')";
-            var result = _client.QueryAsync<BasicDigitalTwin>(query);
+            var result = _dtClient.QueryAsync<BasicDigitalTwin>(query);
             try
             {
                 await foreach (var twin in result)
@@ -43,7 +50,7 @@ namespace EScooter.CustomerFrontend.Data
         {
             RentViewModel rent = null;
             var id = customerId.ToString();
-            var result = _client.GetRelationshipsAsync<BasicRelationship>(id, "is_riding");
+            var result = _dtClient.GetRelationshipsAsync<BasicRelationship>(id, "is_riding");
 
             await foreach (var rentRelationship in result)
             {
@@ -64,27 +71,23 @@ namespace EScooter.CustomerFrontend.Data
         {
             var scooters = new List<ScooterViewModel>();
 
-            var query = "SELECT * FROM DIGITALTWINS DT WHERE IS_OF_MODEL(DT, 'dtmi:com:escooter:EScooter;1')";
-            var result = _client.QueryAsync<BasicDigitalTwin>(query);
-            try
+            var result = await _httpClient.GetAsync(_getScooterUrl);
+            if (!result.IsSuccessStatusCode)
             {
-                await foreach (var twin in result)
-                {
-                    var id = new Guid(twin.Id);
-
-                    var latitude = ((JsonElement)twin.Contents["Latitude"]).GetDouble();
-                    var longitude = ((JsonElement)twin.Contents["Longitude"]).GetDouble();
-                    var battery = ((JsonElement)twin.Contents["BatteryLevel"]).GetDouble();
-
-                    scooters.Add(new ScooterViewModel(id, latitude, longitude, battery));
-                }
+                return scooters;
             }
-            catch (RequestFailedException ex)
-            {
-                Console.WriteLine($"Error {ex.Status}, {ex.ErrorCode}, {ex.Message}");
-                throw;
-            }
+
+            var scootersJson = await result.Content.ReadAsStringAsync();
+            var scootersDto = JsonSerializer.Deserialize<List<ScooterDto>>(scootersJson);
+            scooters = scootersDto.Select(x => ScooterDtoToViewModel(x)).ToList();
+
             return scooters;
+        }
+
+        private ScooterViewModel ScooterDtoToViewModel(ScooterDto x)
+        {
+            bool rentable = x.Connected && x.Enabled && !x.Rented;
+            return new ScooterViewModel(x.Id, x.Latitude, x.Longitude, x.BatteryLevel, rentable);
         }
     }
 }
