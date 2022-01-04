@@ -4,6 +4,7 @@ using EScooter.CustomerFrontend.Data;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Net.Http;
 using System.Windows;
 
 namespace EScooter.CustomerFrontend
@@ -42,6 +43,7 @@ namespace EScooter.CustomerFrontend
             });
 
             services.AddSingleton(_ => CreateDigitalTwinsClient(configuration));
+            services.AddSingleton(_ => new HttpClient());
         }
 
         private DigitalTwinsClient CreateDigitalTwinsClient(IConfiguration configuration)

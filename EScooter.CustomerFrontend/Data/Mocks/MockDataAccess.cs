@@ -24,8 +24,8 @@ namespace EScooter.CustomerFrontend.Data.Mocks
                 new CustomerViewModel(Guid.NewGuid()));
 
             _scooters = List(
-                new ScooterViewModel(Guid.NewGuid(), 34.4129481, 84.10239, 30.0),
-                new ScooterViewModel(Guid.NewGuid(), 34.4890483, 84.03129, 80.0));
+                new ScooterViewModel(Guid.NewGuid(), 34.4129481, 84.10239, 30.0, true),
+                new ScooterViewModel(Guid.NewGuid(), 34.4890483, 84.03129, 80.0, true));
 
             _rents = Map<Guid, RentViewModel>();
         }
