@@ -79,15 +79,16 @@ namespace EScooter.CustomerFrontend.Data
 
             var scootersJson = await result.Content.ReadAsStringAsync();
             var scootersDto = JsonSerializer.Deserialize<List<ScooterDto>>(scootersJson);
-            scooters = scootersDto.Select(x => ScooterDtoToViewModel(x)).ToList();
+            scooters = scootersDto
+                .Where(x => x.Connected && x.Enabled && !x.Rented && !x.Standby)
+                .Select(x => ScooterDtoToViewModel(x)).ToList();
 
             return scooters;
         }
 
         private ScooterViewModel ScooterDtoToViewModel(ScooterDto x)
         {
-            bool rentable = x.Connected && x.Enabled && !x.Rented;
-            return new ScooterViewModel(x.Id, x.Latitude, x.Longitude, x.BatteryLevel, rentable);
+            return new ScooterViewModel(x.Id, x.Latitude, x.Longitude, x.BatteryLevel);
         }
     }
 }
